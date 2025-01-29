@@ -6,48 +6,47 @@ const NODE_ENV = process.env.NODE_ENV
 
 const PORT = process.env[`${NODE_ENV}_PORT`]
 
-const CreateNewURLController = async (req, res)=>{
-    try{
+const CreateNewURLController = async (req, res) => {
+    try {
+        const { originalURL } = req.body;
 
-        const {originalURL} = req.body
-
-        if(!originalURL){
-            const err = new Error("originalURL is missing inside the body")
-            err.statusCode = 400
-            throw err
+        if (!originalURL) {
+            const err = new Error("originalURL is missing inside the body");
+            err.statusCode = 400;
+            throw err;
         }
 
-        const keyId = GenerateUniqueIdForTheURLUtil(6)
+        const keyId = GenerateUniqueIdForTheURLUtil(6);
 
-        const CreateNewURLServiceResult = await CreateNewURLService(originalURL, keyId)
+        const CreateNewURLServiceResult = await CreateNewURLService(originalURL, keyId);
 
-        if(!CreateNewURLServiceResult.success){
-            const err = new Error("Unable to create new URL")
-            err.statusCode = 500
-            throw err
+        if (!CreateNewURLServiceResult.success) {
+            const err = new Error("Unable to create new URL");
+            err.statusCode = 500;
+            throw err;
         }
 
-        const {data : {keyId : keyIdFromDB}} = CreateNewURLServiceResult
+        const { data: { keyId: keyIdFromDB } } = CreateNewURLServiceResult;
 
-        const baseURL = NODE_ENV==="DEV" ? "localhost:" + PORT : req.host
+        const baseURL = NODE_ENV === "DEVELOPMENT" 
+            ? `localhost:${PORT}` 
+            : `${req.protocol}://${req.get("host")}`;
 
         res.status(201).json({
-            success : true,
-            message : "New URL is created",
-            redirectURL : `http://${baseURL}/${keyIdFromDB}`
-        })
+            success: true,
+            message: "New URL is created",
+            redirectURL: `${baseURL}/${keyIdFromDB}`,
+        });
 
-    }catch(err){
-
-        console.log(`Error in CreateNewURLController with err : ${err}`)
+    } catch (err) {
+        console.log(`Error in CreateNewURLController with err : ${err}`);
 
         res.status(err.statusCode ? err.statusCode : 500).json({
-            success : false,
-            message : err.message
-        })
-
+            success: false,
+            message: err.message,
+        });
     }
-}
+};
 
 const RedirectURLController = async (req, res)=>{
     try{
