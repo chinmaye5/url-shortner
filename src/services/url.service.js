@@ -1,9 +1,9 @@
 const URLSModel = require("./../models/urls.model")
 
-async function CreateNewURLService(originalUrl, keyId){
+async function CreateNewURLService(originalUrl, keyId, userId){
     try{
 
-        const result = await URLSModel.create({"originalUrl" : originalUrl, "keyId" : keyId})
+        const result = await URLSModel.create({"originalUrl" : originalUrl, "keyId" : keyId, "userId" : userId})
 
         if(!result){
             throw new Error("unable to call URLSModel.create()")
@@ -47,12 +47,18 @@ async function GetURLDetailsUsingItsKeyIdService(keyId){
     }
 }
 
-async function UpdateTheClickedCountOfURLByOneUsingMongoIdService(mongoId) {
+async function UpdateTheURLUsingMongoIdService(mongoId, city, country) {
     try{
 
         const URL = await URLSModel.findOne({_id:mongoId}).exec()
 
         URL.clickedCount = URL.clickedCount + 1
+        
+        URL.openedAtTimestamp = URL.openedAtTimestamp.push(new Date().getTime())
+
+        if(city || country){
+            URL.openedAtLocation = URL.openedAtLocation.push(`${country}-${city}`)
+        }
 
         await URL.save()
 
@@ -61,7 +67,7 @@ async function UpdateTheClickedCountOfURLByOneUsingMongoIdService(mongoId) {
         }
 
     }catch(err){
-        console.log(`Error in UpdateTheClickedCountOfURLByOneUsingKeyIdService with err : ${err}`)
+        console.log(`Error in UpdateTheURLUsingMongoIdService with err : ${err}`)
         return {
             success : false
         }
@@ -71,5 +77,5 @@ async function UpdateTheClickedCountOfURLByOneUsingMongoIdService(mongoId) {
 module.exports = {
     CreateNewURLService,
     GetURLDetailsUsingItsKeyIdService,
-    UpdateTheClickedCountOfURLByOneUsingMongoIdService
+    UpdateTheURLUsingMongoIdService
 }

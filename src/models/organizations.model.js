@@ -1,30 +1,29 @@
 const mongoose = require("mongoose")
 
-const OrganizationSchema=new mongoose.Schema({
-    name:{
-        type:String,
-        required:true
+const OrganizationSchema = new mongoose.Schema({
+    name : {
+        type : String,
+        required : true
     },
-    domain:{
-        type:String,
+    domain : {
+        type : String
     },
-    isFree:{
-        type:Boolean,
-        default:true
+    isFreeAccount : {
+        type : Boolean,
+        default : true
     },
-    isActive:{
-        type:Boolean,
-        default:true
+    isActive : {
+        type : Boolean,
+        default : true
     },
-    location:{
-        type:String
+    location : {
+        type : String
     },
-    lastPaymentAt:{
-        type:Number
+    lastPaymentAt : {
+        type : Number
     }
-
 })
 
-const ORGANIZATIONModel = mongoose.model("organizations", OrganizationSchema);
+const ORGANIZATIONSModel = mongoose.model("organizations", OrganizationSchema)
 
-module.exports = ORGANIZATIONModel;
+module.exports = ORGANIZATIONSModel

@@ -36,12 +36,13 @@ function CheckEmailDomainIsPersonalOrNotUtil(emailDomain){
           
 
     }catch(err){
-        console.log(`Error in CheckEmailDomainIsPersonalOrNotUtil with err : ${err}`)
+        console.log(`Error in CheckEmailDomainIsPersonalOrBusinessUtil with err : ${err}`)
         return {
             success : false
         }
     }
 }
-module.exports={
+
+module.exports = {
     CheckEmailDomainIsPersonalOrNotUtil
 }

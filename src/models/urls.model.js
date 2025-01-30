@@ -1,6 +1,5 @@
 const mongoose = require("mongoose")
 
-
 const URLSchema = new mongoose.Schema({
     "originalUrl" : {
         type : String,
@@ -18,18 +17,17 @@ const URLSchema = new mongoose.Schema({
         type : Number,
         default : new Date().getTime()
     },
-    // "userId":{
-    //     type : mongoose.Schema.Types.ObjectId,
-    //     ref : "users",
-    //     required:true
-    // },
-    "opendAt":[{
-        type : Number,
+    "userId" : {
+        type : mongoose.Schema.Types.ObjectId,
+        ref : "users",
+        required : true
+    },
+    "openedAtTimestamp":[{
+        type : Number
     }],
-    "opendAtLocation":[{
-        type : String,
+    "openedAtLocation":[{
+        type : String
     }]
-
 })
 
 const URLSModel = mongoose.model("urls", URLSchema)

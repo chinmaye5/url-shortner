@@ -8,7 +8,7 @@ const NODE_ENV = process.env.NODE_ENV
 
 const PORT = process.env[`${NODE_ENV}_PORT`]
 
-
+// const app = express()
 const server = express()
 
 // It will parse the body of the request into JSON
