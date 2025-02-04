@@ -3,6 +3,7 @@ require('dotenv').config()
 require('./db/connect')
 const v1Router = require("./routers/v1/v1.router")
 const {RedirectURLController} = require("./controllers/url.controller")
+const {RequestLoggerMiddleware} = require("./middlewares/requestlogger.middleware")
 
 const NODE_ENV = process.env.NODE_ENV
 
@@ -13,6 +14,8 @@ const server = express()
 
 // It will parse the body of the request into JSON
 server.use(express.json())
+
+server.use(RequestLoggerMiddleware)
 
 server.get("/:keyId", RedirectURLController)
 

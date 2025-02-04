@@ -2,25 +2,16 @@ const {CreateNewURLService, GetURLDetailsUsingItsKeyIdService, UpdateTheURLUsing
 const {GenerateUniqueIdForTheURLUtil} = require("./../utils/url.utils")
 require("dotenv").config()
 
-const jwt = require("jsonwebtoken")
-
 const geoip = require('geoip-lite')
 
 const NODE_ENV = process.env.NODE_ENV
-
-const JWT_SECRET_KEY = process.env[`${NODE_ENV}_JWT_SECRET_KEY`]
 
 const PORT = process.env[`${NODE_ENV}_PORT`]
 
 const CreateNewURLController = async (req, res)=>{
     try{
 
-        // extract the token from the req and verify the token : Authentication
-        const token = req.headers.authorization.split(" ")[1]
-
-        const tokenVerifyResult = await jwt.verify(token, JWT_SECRET_KEY)
-
-        const {userId} = tokenVerifyResult
+        const userId = req.userId
 
         const {originalURL} = req.body
 
@@ -62,50 +53,67 @@ const CreateNewURLController = async (req, res)=>{
     }
 }
 
-const RedirectURLController = async (req, res) => {
-    try {
-        const ip = req.ip;
-        const geography = geoip.lookup(ip);
+const RedirectURLController = async (req, res)=>{
+    try{
 
-        console.log("IP Address:", ip);
-        console.log("Geography Info:", geography);
+        const ip = req.ip
 
-        const { keyId } = req.params;
-        if (!keyId) {
-            throw new Error("keyId is required");
+        const geography = geoip.lookup(ip)
+
+        const {keyId} = req.params
+
+        if(!keyId){
+            const err = new Error("keyId is required")
+            err.statusCode = 400
+            throw err
         }
 
-        const GetURLDetailsUsingItsKeyIdServiceResult = await GetURLDetailsUsingItsKeyIdService(keyId);
-        if (!GetURLDetailsUsingItsKeyIdServiceResult.success) {
-            throw new Error("Unable to fetch data from GetURLDetailsUsingItsKeyIdService");
+        const GetURLDetailsUsingItsKeyIdServiceResult = await GetURLDetailsUsingItsKeyIdService(keyId)
+
+        if(!GetURLDetailsUsingItsKeyIdServiceResult.success){
+            const err = new Error("Unable to fetch data from GetURLDetailsUsingItsKeyIdService")
+            err.statusCode = 400
+            throw err
         }
 
-        const { data: { _id: mongoId, originalUrl, clickedCount, createdAt } } = GetURLDetailsUsingItsKeyIdServiceResult;
+        const { data : {_id : mongoId, originalUrl, clickedCount, createdAt}} = GetURLDetailsUsingItsKeyIdServiceResult
 
-        console.log("Fetched URL Details:", { originalUrl, clickedCount, createdAt });
-
-        if (clickedCount > 10) {
-            throw new Error("You have reached the max limit of 10 requests. Please upgrade for more limits");
+        // check if clickedCount < 10
+        if(clickedCount>10){
+            const err = new Error("You have reached the max limit of 10 request. Please upgrade for more limits")
+            err.statusCode = 400
+            throw err
         }
 
-        if ((new Date().getTime() - createdAt) > 7 * 24 * 60 * 60 * 1000) {
-            throw new Error("Your redirect URL is expired. Please upgrade for more expiry limits");
+        // check if it is newer than 7 days
+        if((new Date().getTime()-createdAt)>7*24*60*60*1000){
+            const err = new Error("Your redirect url is expired. Please upgrade for more expire limits")
+            err.statusCode = 400
+            throw err
         }
 
-        const UpdateTheURLUsingMongoIdServiceResult = await UpdateTheURLUsingMongoIdService(mongoId, geography?.region, geography?.country);
-        if (!UpdateTheURLUsingMongoIdServiceResult.success) {
-            throw new Error("Error while updating the URL in DB");
+        // update the URL in db
+        const UpdateTheURLUsingMongoIdServiceResult = await UpdateTheURLUsingMongoIdService(mongoId, geography?.region, geography?.country)
+
+        if(!UpdateTheURLUsingMongoIdServiceResult.success){
+            const err = new Error(`Error while updating the URL in db`)
+            err.statusCode = 500
+            throw err
         }
 
-        console.log("Redirecting to:", originalUrl);
-        res.redirect(originalUrl);
+        res.redirect(originalUrl)
 
-    } catch (err) {
-        console.error(`Error in RedirectURLController:`, err);
-        res.status(400).json({ success: false, message: err.message });
+    }catch(err){
+
+        console.log(`Error in RedirectURLController with err : ${err}`)
+
+        res.status(err.statusCode?err.statusCode:500).json({
+            success : false,
+            message : err.message
+        })
+
     }
-};
-
+}
 
 module.exports = {
     CreateNewURLController,

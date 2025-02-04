@@ -62,6 +62,7 @@ const SignupController = async (req, res)=>{
             const organizationDomain = emailDomain
             const organizationName = emailDomain.split(".")[0].toUpperCase()
             let organizationId 
+            let organizationRole="ORG_MEMBER"
 
             // check if organiztion is already created or not
             const IsOrganizationPresentUsingOrgDomainServiceResult = await IsOrganizationPresentUsingOrgDomainService(organizationDomain)
